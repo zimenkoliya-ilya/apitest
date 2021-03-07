@@ -127,7 +127,7 @@ class Account extends Model
         return array_merge(array(self::getCompanyId()), Model_Account::getNetworkIds());
     }
 
-    public function getUserId() {
+    static function getUserId() {
         if (isset($_SESSION['user']['id']) && $_SESSION['user']['id']) {
             return $_SESSION['user']['id'];
         }            
