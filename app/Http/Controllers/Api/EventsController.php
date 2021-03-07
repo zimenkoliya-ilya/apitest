@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Event;
+use App\Models\Payment;
+use App\Models\account\Company;
+use App\Models\account\Accounting_type;
+use App\Models\cases\interview\Case_interview_log;
+use App\Models\cases\Case_contact;
+use App\Models\cases\CasesDocument;
+use App\Models\cases\Case_additional;
+use App\Models\cases\Case_status;
+use App\Models\cases\Case_stage;
+use App\Models\cases\CaseView;
+use App\Models\cases\CasesFilter;
+use Aws\S3\S3Client;
+class EventsController extends Controller
+{
+    /**
+     * Constructor.
+     *
+     */
+    public function __construct()
+    {
+        $_SESSION['user']['id'] = 6;
+        $_SESSION['user']['first_name'] = "first";
+        $_SESSION['user']['last_name'] = "last";
+
+    }
+    
+    public function findById(Request $request)
+    {
+        $event_id = $request->event_id;
+        $events = new Events();
+        $data = $events->find($event_id);
+        $query = $events->logger('last');
+        return ['status' => 'success', 'data' => $data, 'query' => $query];
+    }
+    
+    public function findByUser(Request $request)
+    {
+        $user_id = $request->user_id;
+        $offset = $request->offset;
+        $limit = $request->limit;
+        $events = new Events();
+        $data = $events->findByUser($user_id, $offset, $limit);
+        $query = $events->logger('last');
+        return ['status' => 'success', 'data' => $data, 'query' => $query];
+    }
+    
+    public function findByCase(Request $request)
+    {
+        $case_id = $request->case_id;
+        $events = new Events();
+        $data = $events->findByCase($case_id);
+        $query = $events->logger('last');
+        return ['status' => 'success', 'data' => $data, 'query' => $query];
+    }
+    
+    public function findByCompanyID(Request $request)
+    {
+        $company_id = $request->company_id;
+        $events = new Events();
+        $data = $events->findByCompanyID($company_id);
+        $query = $events->logger('last');
+        return ['status' => 'success', 'data' => $data, 'query' => $query];
+    }
+    
+    public function findAllByCase(Request $request)
+    {
+        $case_id = $request->case_id;
+        $events = new Events();
+        $data = $events->findAllByCase($case_id);
+        $query = $events->logger('last');
+        return ['status' => 'success', 'data' => $data, 'query' => $query];
+    }
+    
+    
+    
+    
+    
+    
+    
+    public function testAPI(Request $request)
+    {
+        $message = "";
+        $events = new Event();
+        //
+        $message = "availabilityAlgorithm test";
+        $event_data = array(
+          array(
+            "start"=> "2021-04-03 07:40:00",
+            "end"=> "2021-04-03 07:40:00"
+          )
+        );
+        $start = "6 April 2021";
+        $end = "2021-04-10 07:40:00";
+        $duration = 172800;
+        $user_id = 1;
+        
+        $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
+        //exit;
+        $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
+        $payment = new CasesFilter();
+        $data = [
+                    "date_field"=>"",
+                    "dates"=>"today",
+                    "company_id"=>168,
+                    "date"=>"2014-09-08",
+                    "created_by"=>3,
+                    "ext"=>"pdf",
+                    "type_id"=>5,
+                    "name"=>5,
+                    "status"=>"overdue",
+                    "case_id"=>2325840,
+                    "type_id"=>14,
+                    'end_time'=>"2021-12-12",
+                    'at'=>'2020-12-12',
+                    'datetime'=>'2021-12-12 14:13:12',
+                    'type_id' => 5,
+                    'appointment_id'=>6
+                ]; 
+                $client = new S3Client([
+                    'region'  => 'us-west-2',
+                    'version' => 'latest',
+                    'http'    => ['cert' => '/path/to/cert.pem']
+                ]);
+        $update = $payment->addAccessRestrictions("jhj", "poiup");
+        dd($update);
+        $query = $events->findCases();
+        return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
+    }
+}
