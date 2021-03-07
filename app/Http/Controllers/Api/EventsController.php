@@ -17,6 +17,7 @@ use App\Models\cases\Case_stage;
 use App\Models\cases\CaseView;
 use App\Models\cases\CasesFilter;
 use App\Models\company\CompanyProfile;
+use App\Models\document\DocumentCompanies;
 use Aws\S3\S3Client;
 class EventsController extends Controller
 {
@@ -105,7 +106,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new CompanyProfile();
+        $payment = new DocumentCompanies();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -118,7 +119,7 @@ class EventsController extends Controller
                     'version' => 'latest',
                     'http'    => ['cert' => '/path/to/cert.pem']
                 ]);
-        $update = $payment->findAll(112);
+        $update = $payment->upsertFormtoCompanies(168,[99,678,999,1020]);
         dd($update);
         $query = $events->findCases();
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
