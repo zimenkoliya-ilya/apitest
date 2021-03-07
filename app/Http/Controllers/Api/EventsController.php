@@ -16,6 +16,7 @@ use App\Models\cases\Case_status;
 use App\Models\cases\Case_stage;
 use App\Models\cases\CaseView;
 use App\Models\cases\CasesFilter;
+use App\Models\company\CompanyProfile;
 use Aws\S3\S3Client;
 class EventsController extends Controller
 {
@@ -104,31 +105,20 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new CasesFilter();
+        $payment = new CompanyProfile();
         $data = [
-                    "date_field"=>"",
-                    "dates"=>"today",
-                    "company_id"=>168,
-                    "date"=>"2014-09-08",
-                    "created_by"=>3,
-                    "ext"=>"pdf",
-                    "type_id"=>5,
-                    "name"=>5,
-                    "status"=>"overdue",
-                    "case_id"=>2325840,
-                    "type_id"=>14,
-                    'end_time'=>"2021-12-12",
-                    'at'=>'2020-12-12',
-                    'datetime'=>'2021-12-12 14:13:12',
-                    'type_id' => 5,
-                    'appointment_id'=>6
+                    'company_id'=>3,
+                    'processor_id'=>9,
+                    'user_fee'=>0.98,
+                    'processing_fee'=>0.33,
+                    'renewal_fee'=>93
                 ]; 
                 $client = new S3Client([
                     'region'  => 'us-west-2',
                     'version' => 'latest',
                     'http'    => ['cert' => '/path/to/cert.pem']
                 ]);
-        $update = $payment->addAccessRestrictions("jhj", "poiup");
+        $update = $payment->findAll(112);
         dd($update);
         $query = $events->findCases();
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
