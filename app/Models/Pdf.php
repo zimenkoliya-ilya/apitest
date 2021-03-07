@@ -10,8 +10,8 @@ class Pdf extends Model
     use HasFactory;
     function merge_multiple($form_bundle_group, $remove=false){
         // get forms
-        $new_file = APPPATH . 'tmp' . DIRECTORY_SEPARATOR . uniqid() . '.pdf';
-        $form_direction = APPPATH . 'resources/pdfs';
+        $new_file = 'tmp' . DIRECTORY_SEPARATOR . uniqid() . '.pdf';
+        $form_direction = 'resources/pdfs';
 
         if(!empty($form_bundle_group)) {
             // merge and return temporary location
