@@ -5,7 +5,7 @@ namespace App\Models\document;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Activity extends Model
+class DocumentActivity extends Model
 {
     use HasFactory;
     protected $table = "document_activity";
