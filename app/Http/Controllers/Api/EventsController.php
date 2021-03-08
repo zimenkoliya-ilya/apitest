@@ -21,6 +21,7 @@ use App\Models\document\DocumentCompanies;
 use App\Models\document\DocumentDownloads;
 use App\Models\document\DocumentLog;
 use App\Models\document\DocumentTemplate;
+use App\Models\reporting\ReportingAccounting;
 use Aws\S3\S3Client;
 class EventsController extends Controller
 {
@@ -109,7 +110,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new DocumentTemplate();
+        $payment = new ReportingAccounting();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -122,7 +123,7 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->send3Day(71);
+        $update = $payment->getQuery();
         dd($update);
         $query = $events->findCases();
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
