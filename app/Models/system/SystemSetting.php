@@ -9,23 +9,24 @@ class SystemSetting extends Model
 {
     use HasFactory;
     protected $table = 'settings';
-    static function get($type, $company_id = null, $name = null, $active=null){
+    // used
+    static function get_($type, $company_id = null, $name = null, $active=null){
         $result = array();
 
-        $query = \DB::select()->from('settings')->where('type','=',$type);
+        $query = Systemsetting::where('type', $type);
 
         if($company_id){
-            $query->where('company_id','=', $company_id);
+            $query->where('company_id', $company_id);
         }
         if($name){
-            $query->where('name','=', $name);
+            $query->where('name', $name);
         }
 
         if($active){
-            $query->where('active','=', 1);
+            $query->where('active',  1);
         }
 
-        $result = $query->execute()->as_array();
+        $result = $query->get()->toArray();
         /*
         if(!isset($result) || empty($result)){
             $default = self::getByType($type);
@@ -44,7 +45,7 @@ class SystemSetting extends Model
 
     }
 
-    static function find($id){
+    static function find_($id){
 
         $result = \DB::select()
             ->from('settings')

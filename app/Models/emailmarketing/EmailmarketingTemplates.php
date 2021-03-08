@@ -27,9 +27,7 @@ class EmailmarketingTemplates extends Model
   /* Get template by Id */
   static function get($id)
   {
-    $query = \DB::select()->from('template_emails');
-    $query->where('id', '=', $id);
-    $result = $query->execute()->as_array();
+    $result = EmailmarketingTemplates::where('id', $id)->get()->toArray();
     if (count($result) > 0) return $result[0];
     return array();
   }
@@ -37,9 +35,7 @@ class EmailmarketingTemplates extends Model
   /* Get Template by Name */
   static function getByName($name)
   {
-    $query = \DB::select()->from('template_emails');
-    $query->where('name', 'like', $name);
-    $result = $query->execute()->as_array();
+    $result = EmailmarketingTemplates::where('name', 'like', $name)->get()->toArray();
     if (count($result) > 0) return $result[0];
     return array();
   }
@@ -47,63 +43,64 @@ class EmailmarketingTemplates extends Model
   /* Get Template Name */
   static function getName($id)
   {
-    $temp = self::get($id);
-    if (count($temp)>0) return $temp['name'];
+    $temp = self::find($id);
+    if (count($temp)>0) return $temp->name;
     return '';
   }
 
   /* Get Template from */
   static function getFrom($id)
   {
-    $temp = self::get($id);
-    if (count($temp)>0) return $temp['from'];
+    $temp = self::find($id);
+    if (count($temp)>0) return $temp->from;
     return '';
   }
 
   /* Get Template Subject */
   static function getSubject($id)
   {
-    $temp = self::get($id);
-    if (count($temp)>0) return $temp['subject'];
+    $temp = self::find($id);
+    if (count($temp)>0) return $temp->subject;
     return '';
   }
 
   /* Get Template CC */
   static function getCc($id)
   {
-    $temp = self::get($id);
-    if (count($temp)>0) return $temp['cc'];
+    $temp = self::find($id);
+    if (count($temp)>0) return $temp->cc;
     return '';
   }
 
   /* Get Template Bcc */
   static function getBcc($id)
   {
-    $temp = self::get($id);
-    if (count($temp)>0) return $temp['bcc'];
+    $temp = self::find($id);
+    if (count($temp)>0) return $temp->bcc;
     return '';
   }
 
   /* Get Template To */
   static function getTo($id)
   {
-    $temp = self::get($id);
-    if (count($temp)>0) return $temp['to'];
+    $temp = self::find($id);
+    if (count($temp)>0) return $temp->to;
     return '';
   }
 
   /* Get Template Message */
   static function getMessage($id)
   {
-    $temp = self::get($id);
-    if (count($temp)>0) return $temp['message'];
+    $temp = self::find($id);
+    if (count($temp)>0) return $temp->message;
     return '';
   }
 
   /* List Templates for System Settings */
   static function listTemplates() {
-    $query = \DB::query('select et.id as id, et.name as name, et.from as emailfrom, et.to as emailto from template_emails as et');
-    $result = $query->execute()->as_array();
+    $query = EmailmarketingTemplates::select('et.id as id', 'et.name as name', 'et.from as emailfrom', 'et.to as emailto')
+    ->from('template_emails as et');
+    $result = $query->get()->toArray();
     if (count($result) > 0) return $result;
     return array();
   }
@@ -114,13 +111,14 @@ class EmailmarketingTemplates extends Model
     $id = 0;
     if (isset($data['id']) && $data['id'] != '') { // It's update
       if (self::exists($data['id'])) {
-        $result = \DB::update('template_emails')->set($data)->execute();
+        $result = EmailmarketingTemplates::find($data['id'])->fill($data);
+        $result->update();
         $result = self::updateTemplatecaseCampaign($data);
         $id = $data['id'];
       }
     } else { // It's insert
       if (self::existsByName($data['name'])==0) {
-        list($id, $rows_affected) = \DB::insert('template_emails')->set($data)->execute();
+        list($id, $rows_affected) = EmailmarketingTemplates::create($data);
       }
     }
     return $id;
@@ -129,7 +127,7 @@ class EmailmarketingTemplates extends Model
   /* Remove Template */
   static function remove($id)
   {
-    $remove = \DB::delete('template_emails')->where('id', '=', $id)->execute();
+    $remove =EmailmarketingTemplates::find($id)->delete();
     $result = ($remove>0);
     // Also remove from case Campaigns
     $remove = self::removeFromcases($id);

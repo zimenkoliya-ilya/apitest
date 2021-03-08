@@ -460,7 +460,7 @@ class Log extends Model
             }
     */
     static function transaction($data){
-        $filename = APPPATH . '/logs/transactions.txt';
+        $filename = '/logs/transactions.txt';
 
         $f = @fopen($filename, 'a+');
         if (!$f) {
