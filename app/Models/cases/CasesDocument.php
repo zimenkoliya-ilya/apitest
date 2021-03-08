@@ -8,6 +8,7 @@ use App\Models\Esign_doc;
 use App\Models\Account;
 use App\Models\DocumentTypes;
 use App\Models\Pdf;
+use App\Models\Logs;
 use App\Models\document\DocumentActivity;
 use App\Models\system\Access;
 use Aws\EndpointDiscovery\Configuration;
@@ -1039,7 +1040,7 @@ class CasesDocument extends Model
             $user_name = Account::getUserFullName();
             $add_result = DocumentActivity::create(['name'=> $user_name, 'message'=> $d['value'], 'case_id'=>$doc['case_id']]);
             if(!$add_result){
-                Log::append('document','Could not add note to document activity log',$doc['case_id']);
+                Logs::append('document','Could not add note to document activity log',$doc['case_id']);
             }
         }
         return $result;

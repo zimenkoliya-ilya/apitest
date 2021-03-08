@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Log extends Model
+class Logs extends Model
 {
     use HasFactory;
     static function addActivity($case_id, $type, $message, $note = '', $user_id = 0, $pkid=false){

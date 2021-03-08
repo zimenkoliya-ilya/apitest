@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\system\SystemActiontask;
+use App\Models\Logs;
 class Action extends Model
 {
     use HasFactory;
@@ -155,13 +156,12 @@ class Action extends Model
 
         function performTasks(){
 
-            $action_tasks = \DB::select('at.label','asts.target_id')
-                ->from(array('actions_tasks','asts'))
-                ->join(array('action_tasks', 'at'))->on('at.id', '=', 'asts.task_id')
-                ->where('asts.action_id', '=', $this->action_id)
-                ->execute()
-                ->as_array();
-
+            $action_tasks = SystemActiontask::select('at.label','asts.target_id')
+                ->from('actions_tasks, asts')
+                ->join('action_tasks as at', 'at.id', 'asts.task_id')
+                ->where('asts.action_id',  $this->action_id)
+                ->get()
+                ->toArray();
             if($action_tasks){
                 // gets each action function in set as label and runs it
                 foreach($action_tasks as $task){
@@ -171,8 +171,8 @@ class Action extends Model
                          self::$action($this->case_id, $task['target_id']);
                     }catch(\Exception $e){
                         self::logActionIDs($action, $this->case_id, $task['target_id'], $e->getMessage());
-                        Model_Log::file('actions',$action.':'.$e->getMessage());
-                        \Fuel\Core\Log::error($e);
+                        Logs::file('actions',$action.':'.$e->getMessage());
+                        Log::error($e);
                     }
 
                 }
@@ -189,8 +189,8 @@ class Action extends Model
                 self::$task($case_id, $target_id);
             }catch(\Exception $e){
                 self::logActionIDs($task, $case_id, $target_id, $e->getMessage());
-                Model_Log::file('actions',$task.':'.$e->getMessage());
-                \Fuel\Core\Log::error($e);
+                Logs::file('actions',$task.':'.$e->getMessage());
+                Log::error($e);
             }
         }
 

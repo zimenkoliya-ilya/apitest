@@ -86,7 +86,7 @@ class Mail extends Model
 
         if(!$mail->send()) {
             //echo 'Message could not be sent.';
-            \Fuel\Core\Log::error('Mailer Error: ' . $mail->ErrorInfo.' User:'.Model_Account::getUserId());
+            Log::error('Mailer Error: ' . $mail->ErrorInfo.' User:'.Model_Account::getUserId());
             return false;
 
         }
