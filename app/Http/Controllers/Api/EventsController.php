@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
-use App\Models\Payment;
+use App\Models\payments\PaymentsReminder;
 use App\Models\account\AccountCompany;
 use App\Models\account\Accounting_type;
 use App\Models\cases\interview\Case_interview_log;
@@ -24,6 +24,7 @@ use App\Models\document\DocumentTemplate;
 use App\Models\reporting\ReportingAccounting;
 use App\Models\reporting\ReportingActions;
 use App\Models\student\StudentLoans;
+use App\Models\emailmarketing\EmailmarketingCampaign;
 use Aws\S3\S3Client;
 class EventsController extends Controller
 {
@@ -107,7 +108,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new StudentLoans();
+        $payment = new PaymentsReminder();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -120,7 +121,7 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->delete_(2325840);
+        $update = $payment->send5Day();
         dd($update);
         $query = $events->findCases();
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];

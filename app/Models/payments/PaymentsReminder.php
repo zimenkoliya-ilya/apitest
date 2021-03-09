@@ -5,7 +5,7 @@ namespace App\Models\payments;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Action;
-class PaymentsReminder extends Model
+class PaymentsReminder extends Action
 {
     use HasFactory;
     private $txt_template = 1;

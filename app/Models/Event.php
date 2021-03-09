@@ -393,7 +393,7 @@ class Event extends Model
                 'first_name' => $a['first_name'],
                 'last_name' => $a['last_name'],
                 'at' => date('m/d g:ia', strtotime($a['at'])),
-                'relative_datetime' => \Formatter\Format::relative_date($a['at']),
+                'relative_datetime' => date("Y-m-d H:i:s",strtotime($a['at'])),
                 'description' => $a['description'],
                 'title' => $a['title'],
                 'user_name' => $a['user_first_name'] . ' '. $a['user_last_name'],

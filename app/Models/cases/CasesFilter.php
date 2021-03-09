@@ -590,7 +590,6 @@ class CasesFilter extends Model
         $query = $this->addAccessRestrictions($query, $tables);
         return $query;
     }
-    //problem account->signon->session_id() function 
     function addAccessRestrictions($query, $tables){
 
         $required_tables = array();
@@ -666,7 +665,6 @@ class CasesFilter extends Model
         }
         Log::append('queries',$string);
     }
-    // problem $this->query unknown
     function queryReport(){
         $report =  '<h1>Query Report</h1><pre>';
         foreach($this->queries as $query){

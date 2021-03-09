@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Session;
 class Account extends Model
 {
     use HasFactory;
@@ -78,7 +78,7 @@ class Account extends Model
     
     public function signOut(){
         // Set Phone status Unavailable
-        Model_System_UserSession::update(session_id(),array('active' => 0));
+        Model_System_UserSession::update(session()->getId(),array('active' => 0));
         unset($_SESSION['user']);
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000,

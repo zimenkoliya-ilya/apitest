@@ -4,38 +4,47 @@ namespace App\Models\emailmarketing;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\Schema;
 class EmailmarketingCampaign extends Model
 {
     use HasFactory;
     protected $table = "email_marketing_campaign";
+
     private static $dataTables = array(
-        'email_marketing_campaign' => 'CREATE TABLE `email_marketing_campaign` (
-                                                    `id` int(11) NOT NULL AUTO_INCREMENT,
-                                                    `name` varchar(128),
-                                                    `description` text,
-                                                    `active` tinyint(1) NOT NULL,
-                                                    PRIMARY KEY (`id`)
-                                                  )',
-        'email_marketing_campaign_templates' => 'CREATE TABLE `email_marketing_campaign_templates` (
-                                                    `id` int(11) NOT NULL AUTO_INCREMENT,
-                                                    `campaign_id` int(11) NOT NULL,
-                                                    `template_id` int(11) NOT NULL,
-                                                    `order` int(11) NOT NULL,
-                                                    `timeframe` int(11) NOT NULL,
-                                                    PRIMARY KEY (`id`)
-                                                  )',
-        'email_marketing_campaign_cases' => 'CREATE TABLE `email_marketing_campaign_cases` (
-                                                    `id` int(11) NOT NULL AUTO_INCREMENT,
-                                                    `campaign_id` int(11) NOT NULL,
-                                                    `case_id` int(11) NOT NULL,
-                                                    `template_id` int(11) NOT NULL,
-                                                    `send_date` datetime NOT NULL,
-                                                    `active` tinyint(1) NOT NULL,
-                                                    `sent_date` datetime,
-                                                    PRIMARY KEY (`id`)
-                                                  )',
-        );
+        'email_marketing_campaign' => '
+          Schema::connection(`mysql`)->create(`email_marketing_campaign`, function($table)
+          {
+              $table->increments(`id`);
+              $table->string(`name`)->nullable();
+              $table->text(`description`)->nullable();
+              $table->tinyInteger(`active`, 1)->default(1);
+              $table->timestamps();
+          });
+        ',
+        'email_marketing_campaign_templates' =>'
+          Schema::connection(`mysql`)->create(`email_marketing_campaign_templates`, function($table)
+          {
+              $table->increments(`id`);
+              $table->integer(`campaign_id`)->nullable();
+              $table->integer(`template_id`)->nullable();
+              $table->integer(`order`)->nullable();
+              $table->integer(`timeframe`)->nullable();
+              $table->timestamps();
+          });
+        ',
+        'email_marketing_campaign_cases' => '
+          Schema::connection(`mysql`)->create(`email_marketing_campaign_cases`, function($table)
+          {
+              $table->increments(`id`);
+              $table->integer(`campaign_id`)->nullable();
+              $table->integer(`case_id`)->nullable();
+              $table->integer(`template_id`)->nullable();
+              $table->datetime(`send_date`)->nullable();
+              $table->tinyInteger(`active`, 1)->default(1);
+              $table->timestamps();
+          });
+        ',
+      );
       
         /** Initializing method that will insert the new tables if they don't exist
          *  and collect all starting permissions and roles */
@@ -55,6 +64,7 @@ class EmailmarketingCampaign extends Model
         // TODO: This should probably be converted into a public generic method
         private static function _buildDataModel($table_definition)
         {
+          dd(array_keys($table_definition));
           $result = true;
           foreach (array_keys($table_definition) as $table) {
             $rs = (DB::query("SHOW TABLES LIKE '" . $table . "'")->execute()) > 0;
@@ -201,7 +211,7 @@ class EmailmarketingCampaign extends Model
         }
       
         /* Save New/Update if there's an id - returns id */
-        static function save($data)
+        static function save_($data)
         {
           $id = 0;
           if (isset($data['id']) && $data['id'] != '') { // It's update

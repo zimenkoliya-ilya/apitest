@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\DB;
 class Cases extends Model
 {
     use HasFactory;
@@ -84,6 +84,9 @@ class Cases extends Model
                 $ids = array($ids);
             }
             $user = Account::getUserId();
+            $payment = Payment::selectRaw('p.case_id, SUM(p.amount) as paid')->from('payments as p')->where('p.status_id', 3)
+                    ->groupBy('p.case_id');
+                    
             $result = Cases::selectRaw(
                 'c.id, c.company_id,c.is_duplicate,c.last_action,c.action_count,c.created,c.updated,
                 cc.first_name,cc.last_name,cc.middle_name,cc.email,cc.primary_phone,cc.secondary_phone,cc.mobile_phone,cc.ssn,cc.dob,cc.fax,cc.address,cc.address_2,cc.city,cc.state,cc.zip,cc.country,cc.timezone,cc.title,cc.dpp_contact_id,cc.direct_mail_id,cc.credit_score,cc.vendor_id,
@@ -123,11 +126,11 @@ class Cases extends Model
                 })
                 ->leftJoin('case_labels as clb', 'clb.case_id', 'c.id')
                 ->leftJoin('financing as f', 'f.case_id', 'c.id')
-                ->leftJoin('(select SUM(p.amount) as paid, p.case_id
+                ->join(array(\DB::expr('(select SUM(p.amount) as paid, p.case_id
                         from payments p
                         where p.status_id = 3
-                        group by p.case_id) as p', 'p.case_id', 'c.id')
-
+                        group by p.case_id)'),'p'), 'LEFT')->on('p.case_id','=','c.id')
+                ->leftJoin($payment.' as p', 'p.case_id', 'c.id')
                 ->leftJoin('financing_payments as fpayments', 'fpayments.case_id','c.id')
                 ->leftJoin('statuses as dialer_s', 'dialer_s.id', 'cs.dialer_id');
             dd($result->get()->toArray());

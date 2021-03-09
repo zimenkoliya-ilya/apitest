@@ -8,6 +8,8 @@ use App\Models\Esign_doc;
 use App\Models\Account;
 use App\Models\DocumentTypes;
 use App\Models\Pdf;
+use App\Models\Cases;
+use App\Models\system\SystemSetting;
 use App\Models\Logs;
 use App\Models\document\DocumentActivity;
 use App\Models\system\Access;
@@ -304,12 +306,11 @@ class CasesDocument extends Model
     public function delete_($id){
         CasesDocument::find($id)->delete();
     }
-    // problem not exist settins table in database
     public function deleteS3($doc){
 
         //$case = \Model_Case::find($doc['case_id']);
 
-        $json_settings = \Model_System_Setting::get('s3');
+        $json_settings = SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true); // Manually set for SLS
 
         $client = \Aws\S3\S3Client::factory(array(
@@ -333,7 +334,7 @@ class CasesDocument extends Model
 
         }
 
-        \DB::delete('case_documents')->where('id', '=', $doc['id'])->execute();
+        CaseDocument::find($doc['id'])->delete();
 
         return $result;
 
@@ -349,10 +350,9 @@ class CasesDocument extends Model
 
         return 'https://student-advocates-crm.s3.amazonaws.com/' . $loc . $doc['file'];
     }
-    // problem settins table not exist
     public function streamS3Object($doc){
 
-        $json_settings = \Model_System_Setting::get('s3');
+        $json_settings =SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
 
         $client = \Aws\S3\S3Client::factory(array(
@@ -372,10 +372,9 @@ class CasesDocument extends Model
         self::readObject($client, 'student-loan-support', $loc, $doc['file']);
 
     }
-    // problem settings table not exist
     public function streamCaseObject($case_id, $file){
 
-        $json_settings = \Model_System_Setting::get('s3');
+        $json_settings = \SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
 
         $client = \Aws\S3\S3Client::factory(array(
@@ -391,7 +390,6 @@ class CasesDocument extends Model
         self::readObject($client, 'student-loan-support', $loc, $file);
 
     }
-    // problem AWS...
     public function readObject(S3Client $client, $bucket, $key, $file)
     {
         $content_type = self::getMimeType(strtolower($file));
@@ -409,11 +407,10 @@ class CasesDocument extends Model
 
 
     /* AWS S3 SDK */
-    //proboem settings table not exist
     public function getS3Object($doc){
 
         //$case = \Model_Case::find($doc['case_id']);
-        $json_settings = Setting::get('s3');
+        $json_settings = SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
 
         $client = \Aws\S3\S3Client::factory(array(
@@ -504,11 +501,10 @@ class CasesDocument extends Model
         }
         return false;
     }
-    // problem settings table not exist
     public function downloadS3Object($folder, $document_name){
 
         //$case = \Model_Case::find($doc['case_id']);
-        $json_settings = \Model_System_Setting::get('s3');
+        $json_settings = SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
 
         $client = \Aws\S3\S3Client::factory(array(
@@ -534,7 +530,6 @@ class CasesDocument extends Model
 
     }
 
-    // problem settings table when call
     public function download_merge($doc_ids){
         $doc_group = array();
         $doc_ids_set = explode(',',$doc_ids);
@@ -566,10 +561,10 @@ class CasesDocument extends Model
         return $merged_file;
         // Return Success
     }
-    // problem settings table when call getS3Object()
+    // problem convert\image class not exist
     public function download_convert($doc_id){
         // Merge Docs
-        $pdf = new \Model_PDF();
+        $pdf = new PDF();
 
         // Get Document Objects
         $document = self::find($doc_id);
@@ -580,18 +575,17 @@ class CasesDocument extends Model
         $document_file = self::getS3Object($document);
         if($document_file) {
             $document_location = $document_file['body'];
-            $new_location = APPPATH . 'tmp' . DIRECTORY_SEPARATOR . uniqid() . '.pdf';
+            $new_location = 'tmp' . DIRECTORY_SEPARATOR . uniqid() . '.pdf';
 
             return \Converter\Image::imgToPdf($document_location, $new_location);
         }
         return false;
     }
-    // problem settings table not exist
     // Temporary Hack to get DPP Documents Downlaoded
     public function getS3DppObject($doc){
         //$case = \Model_Case::find($doc['case_id']);
         try {
-            $json_settings = \Model_System_Setting::get('s3');
+            $json_settings = SystemSetting::get('s3');
             $settings = json_decode($json_settings['value'], true);
         }catch(\Exception $e){
             Log::error($e);
@@ -621,10 +615,9 @@ class CasesDocument extends Model
         return $data;
 
     }
-    // problem settings table
     public function updateS3ObjectAcl($key, $acl = 'public-read'){
 
-        $json_settings = \Model_System_Setting::get('s3');
+        $json_settings = SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
         if(!$setting){
             throw new Exception('No S3 settings for this company');
@@ -647,10 +640,9 @@ class CasesDocument extends Model
         return $result;
 
     }
-    // problem settings table
     public function getUrl($key){
 
-        $json_settings = \Model_System_Setting::get('s3');
+        $json_settings = SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
         if(!$setting){
             throw new Exception('No S3 settings for this company');
@@ -694,7 +686,7 @@ class CasesDocument extends Model
     public function addS3($case_id, $file, $folder=null, $email_id=null){
 
         $path_parts = pathinfo($file['name']);
-        $clean_name = \Formatter\Format::sanitizeString($path_parts['filename']);
+        $clean_name = filter_var($path_parts['filename'], FILTER_SANITIZE_STRING);
         $filename = $clean_name. '_ '.uniqid().'.'.$path_parts['extension'];
 
         if(isset($file['document_type'])) {
@@ -704,8 +696,8 @@ class CasesDocument extends Model
         }
 
 
-        $case = \Model_Case::find($case_id);
-        $json_settings = \Model_System_Setting::get('s3');
+        $case = Cases::find($case_id);
+        $json_settings = SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
         if(!$setting){
             throw new Exception('No S3 settings for this company');
@@ -771,12 +763,11 @@ class CasesDocument extends Model
         return $clean_name;
     }
 
-    // problem settings 
     public function upload($case_id, $filename, $file, $folder=null){
 
         //SETTINGS
-        $case = \Model_Case::find($case_id);
-        $json_settings = \Model_System_Setting::get('s3');
+        $case = Cases::find($case_id);
+        $json_settings = SystemSetting::get('s3');
         $setting = json_decode($json_settings['value'], true);
         if(!$setting){
             throw new Exception('No S3 settings for this company');
@@ -1046,14 +1037,13 @@ class CasesDocument extends Model
         return $result;
     }
 
-    // problem 
     public function strip_pages($doc_id, $pages){
         $document = self::find($doc_id);
         // Download Documents
         $document_file = self::getS3Object($document);
         if($document_file) {
             $document_location = $document_file['body'];
-            $new_filename = APPPATH . 'resources/pdfs/'.self::getCaseUID($document['case_id']);
+            $new_filename = 'resources/pdfs/'.self::getCaseUID($document['case_id']);
             $output = shell_exec("pdftk " . $document_location . " cat " . $pages . " output " . $new_filename);
             if(is_file($new_filename)){
                 return $new_filename;
@@ -1062,11 +1052,6 @@ class CasesDocument extends Model
             }
         }
     }
-
-
-
-
-
 
     public function findByFilter($filter){
 
