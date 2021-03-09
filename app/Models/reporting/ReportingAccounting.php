@@ -65,9 +65,9 @@ class ReportingAccounting extends Model
         $q = self::setPeriodFilter($q, $period_start, $period_end);
 
         if (is_array($status)) {
-            $q->where('status_id', 'in', $status);
+            $q->whereIn('status_id', $status);
         } else {
-            $q->where("status_id", "=", $status);
+            $q->where("status_id", $status);
         }
         return static::buildTableResults(getPaymentsByStatusAndIntervalData($interval,$status,$period_start,$period_end));
     }
