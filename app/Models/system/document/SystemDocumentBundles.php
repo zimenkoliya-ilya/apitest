@@ -4,6 +4,8 @@ namespace App\Models\system\document;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Validator;
+use Illuminate\Support\Facades\DB;
 
 class SystemDocumentBundles extends Model
 {
@@ -30,8 +32,8 @@ class SystemDocumentBundles extends Model
 
     static function findByFilter($columns, $id){
 
-        $result = \DB::select_array($columns)->from('document_fields')->where('form_id', '=', $id)->execute();
-        return $result->as_array();
+        $result = SystemDocumentFields::selectRaw($columns)->where('form_id', $id)->get();
+        return $result->toArray();
 
     }
 
@@ -53,47 +55,36 @@ class SystemDocumentBundles extends Model
         // Cleared for Testing
        // DB::delete('form_fields')->execute(); // TEST SHIT
 
-        $query = \DB::insert('document_fields')->columns(array('form_id','form_field'));
+        $query = SystemDocumentFields::create(array('form_id','form_field'));
 
         foreach($pdf_fields as $field){
-            $query->values(array($form_id,$field));
+            $result = SystemDocumentFields::create(['form_id'=>$form_id,'form_field'=>$field]);
         }
-
-        $result = $query->execute();
-
         return $result;
     }
 
-
-
     static function update_($data){
-
-
-        DB::start_transaction();
-
+        DB::beginTransaction();
         if(isset($data['value'])){
             foreach($data['value'] as $k => $v){
                 if(empty($v)){
                     $v = NULL;
                 }
-                    $query = \DB::update('document_fields');
-                    $query->value('value', $v)
-                          ->where('id', '=', $k);
-                    $result = $query->execute();
+                    $result = SystemDocumentFields::find($id)->fill(['value'=> $v]);
+                    $result->update();
 
-
-                $query = \DB::update('document_fields');
+                $query = SystemDocumentFields::find($k);
                 if(isset($data['required'][$k])){
-                    $query->value('required', $data['required'][$k]);
+                    $query->fill(['required'=> $data['required'][$k]]);
                 }else{
-                    $query->value('required', null);
+                    $query->value(['required'=> null]);
                 }
-                $result = $query->where('id', '=', $k)->execute();
+                $result = $query->update();
 
             }
         }
-
-        DB::commit_transaction();
+        //problem function not exist
+        DB::commit();
 
         return $result;
     }
@@ -110,9 +101,7 @@ class SystemDocumentBundles extends Model
 
 
     static function validate($factory){
-
-        $val = \Validation::forge($factory);
-
+        $val = Validator::make($factory,[]);
         return $val;
     }
 }

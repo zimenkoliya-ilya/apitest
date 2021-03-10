@@ -23,6 +23,7 @@ use App\Models\document\DocumentLog;
 use App\Models\document\DocumentTemplate;
 use App\Models\reporting\ReportingAccounting;
 use App\Models\reporting\ReportingActions;
+use App\Models\system\document\SystemDocumentFields;
 use App\Models\student\StudentLoans;
 use App\Models\emailmarketing\EmailmarketingCampaign;
 use Aws\S3\S3Client;
@@ -108,7 +109,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new EmailmarketingCampaign();
+        $payment = new SystemDocumentFields();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -121,7 +122,7 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->exists(5);
+        $update = $payment->update_(['value'=>[3=>1,5=>2,7=>3,9=>4]]);
         dd($update);
         $query = $events->findCases();
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
