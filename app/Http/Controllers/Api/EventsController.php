@@ -33,6 +33,7 @@ use App\Models\system\form\SystemFormFields;
 use App\Models\system\SystemUsersession;
 use App\Models\system\form\section\SystemFormSectionShared;
 use App\Models\system\form\SystemFormContainers;
+use App\Models\system\form\SystemFormCopy;
 
 use Aws\S3\S3Client;
 class EventsController extends Controller
@@ -117,7 +118,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new SystemFormContainers();
+        $payment = new SystemFormCopy();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -130,7 +131,7 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->findByCompanyAndShared(1);
+        $update = $payment->duplicate_form(1, 1);
         $query = "query";
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
     }
