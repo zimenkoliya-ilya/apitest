@@ -30,6 +30,8 @@ use App\Models\student\StudentLoans;
 use App\Models\emailmarketing\EmailmarketingCampaign;
 use App\Models\system\form\section\SystemFormSectionFields;
 use App\Models\system\form\SystemFormFields;
+use App\Models\system\SystemUsersession;
+use App\Models\system\form\section\SystemFormSectionShared;
 use Aws\S3\S3Client;
 class EventsController extends Controller
 {
@@ -113,7 +115,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new Networks();
+        $payment = new SystemFormSectionShared();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -126,8 +128,8 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->queryNetworkCases($query, [1=>1,2=>2,3=>3,4=>4]);
-        $query = $events->findCases();
+        $update = $payment->deleteFromNotInResult(2510, [202]);
+        $query = "query";
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
     }
 }

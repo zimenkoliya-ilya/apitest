@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\system\SystemFormfieldoption;
 use App\Models\system\form\section\SystemFormSectionFields;
+use Illuminate\Support\Facades\DB;
 class SystemFormFields extends Model
 {
     use HasFactory;
@@ -75,13 +76,14 @@ class SystemFormFields extends Model
     }
     // ???
     static function findAllByIDs($field_ids){
-        dd(implode(',', $field_ids));
+        $implode = implode(',',$field_ids);
         $result = SystemFormFields::from('form_fields as f')
             ->whereIn('f.id', $field_ids)
-            ->orderBy('FIELD(id, '.implode(',',$field_ids).')')
+            // ->orderBy(function($query) use($implode) {
+            //    $result = $query->select('FIELD(id, '.$implode.')');
+            // })
             ->get()
             ->toArray();
-        dd($result);
         return $result;
     }
     

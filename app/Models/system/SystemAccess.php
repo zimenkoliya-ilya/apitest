@@ -15,7 +15,7 @@ class SystemAccess extends Model
             // SYSTEM
             return $query;
         }
-        switch(\Account::getType()){
+        switch(Account::getType()){
             case 'Master':
                 $query->where('c.company_id','IN', \Account::getNetworkIds());
                 break;
