@@ -9,6 +9,11 @@ class SystemFormSectionShared extends Model
 {
     use HasFactory;
     protected $table = "form_sections_shared";
+    protected $fillable = [
+        'form_section_id',
+        'company_id',
+        'active',
+    ];
     static function find_($section_id)
     {
         $result = SystemFormSectionShared::find($section_id);

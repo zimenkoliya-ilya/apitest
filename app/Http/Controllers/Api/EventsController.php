@@ -32,6 +32,8 @@ use App\Models\system\form\section\SystemFormSectionFields;
 use App\Models\system\form\SystemFormFields;
 use App\Models\system\SystemUsersession;
 use App\Models\system\form\section\SystemFormSectionShared;
+use App\Models\system\form\SystemFormContainers;
+
 use Aws\S3\S3Client;
 class EventsController extends Controller
 {
@@ -115,7 +117,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new SystemFormSectionShared();
+        $payment = new SystemFormContainers();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -128,7 +130,7 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->deleteFromNotInResult(2510, [202]);
+        $update = $payment->findByCompanyAndShared(1);
         $query = "query";
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
     }
