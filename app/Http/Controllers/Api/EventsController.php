@@ -108,7 +108,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new PaymentsReminder();
+        $payment = new EmailmarketingCampaign();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -121,7 +121,7 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->send5Day();
+        $update = $payment->exists(5);
         dd($update);
         $query = $events->findCases();
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];

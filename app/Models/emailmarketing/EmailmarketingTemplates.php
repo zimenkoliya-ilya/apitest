@@ -182,18 +182,17 @@ class EmailmarketingTemplates extends Model
 
   /* Removes collection of templates belongs to a campaign */
   static function removesTemplatesFromCampaign($campaign_id) {
-    $result = \DB::delete('email_marketing_campaign_templates')
-              ->where('campaign_id', '=', $campaign_id)->execute();
+    $result = EmailMarketingCampaignTemplate::where('campaign_id', $campaign_id)->delete();
     return ($result>0);
   }
 
 
   /* Return collection of templates included in a campaign */
   static function includedInCampaign($campaign_id) {
-    $query = \DB::select('email_marketing_campaign_templates.id','email_marketing_campaign_templates.template_id','template_emails.name','template_emails.from','template_emails.to', 'email_marketing_campaign_templates.timeframe')->from('email_marketing_campaign_templates');
-    $query->join('template_emails')->on('template_emails.id','=','email_marketing_campaign_templates.template_id');
-    $query->order_by('email_marketing_campaign_templates.order','asc');
-    $result = $query->execute()->as_array();
+    $query = EmailMarketingCampaignTemplate::select('email_marketing_campaign_templates.id','email_marketing_campaign_templates.template_id','template_emails.name','template_emails.from','template_emails.to', 'email_marketing_campaign_templates.timeframe');
+    $query->join('template_emails', 'template_emails.id','email_marketing_campaign_templates.template_id');
+    $query->orderBy('email_marketing_campaign_templates.order','asc');
+    $result = $query->get()->toArray();
     if (count($result) > 0) return $result;
     return array();
   }
@@ -203,13 +202,13 @@ class EmailmarketingTemplates extends Model
   /* Add Template to Campaign */
   static function addToCampaign($template_id, $campaign_id, $order=0, $timeframe = 10) {
     $result = true;
-    if (Model_EmailMarketing_Campaign::exists($campaign_id) && self::exists($template_id)) {
-        $template_data['id'] = null;
-        $template_data['template_id'] = $template_id;
-        $template_data['campaign_id'] = $campaign_id;
-        $template_data['order'] = $order;
-        $template_data['timeframe'] = $timeframe;
-      list($insert_id, $rows_affected) = \DB::insert('email_marketing_campaign_templates')->set($template_data)->execute();
+    if (EmailMarketingCampaign::exists($campaign_id) && EmailMarketingCampaign::exists($template_id)) {
+      $template_data['id'] = null;
+      $template_data['template_id'] = $template_id;
+      $template_data['campaign_id'] = $campaign_id;
+      $template_data['order'] = $order;
+      $template_data['timeframe'] = $timeframe;
+      list($insert_id, $rows_affected) = EmailMarketingCampaignTemplate::create($template_data);
       $result &= ($insert_id>0);
     }
     return $result;
@@ -393,9 +392,9 @@ class EmailmarketingTemplates extends Model
 
   /* Removes collection of templates belongs to a case campaign */
   static function removesTemplatesFromCaseCampaign($campaign_id, $case_id = null) {
-    $query = \DB::delete('email_marketing_campaign_cases')->where('campaign_id', '=', $campaign_id);
-    if ($case_id != null) $query->where('case_id', '=', $case_id);
-    $result = $query->execute();
+    $query = EmailMarketingCampaignTemplate::where('campaign_id', $campaign_id);
+    if ($case_id != null) $query->where('case_id', $case_id);
+    $result = $query->get();
     return ($result>0);
   }
 
