@@ -4,51 +4,54 @@ namespace App\Models\system\form;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\system\SystemFormfieldoption;
+use App\Models\system\form\section\SystemFormSectionFields;
 class SystemFormFields extends Model
 {
     use HasFactory;
     protected $table = "form_fields";
     static function find_($id){
-        $result = \DB::select()->from('form_fields')->where('id', '=', $id)->execute();
-        return current($result->as_array());
+        $result = SystemFormFields::find($id)->get();
+        return $result->toArray();
     }
     
     static function findAll($object_id){
         
-        $result = \DB::select('f.*', array('ofs.sort', 'section_sort'), array('ofc.sort', 'container_sort'))
-                ->from(array('form_fields','f'))
-                ->join(array('form_sections', 'ofc'), 'LEFT')->on('ofc.id','=','f.container_id')
-                ->join(array('form_sections', 'ofs'), 'LEFT')->on('ofs.id','=','ofc.parent_id')
-                ->where('f.object_id', '=', $object_id)
-                ->order_by('ofs.sort')
-                ->order_by('ofc.sort')
-                ->order_by('f.sort')
-                ->execute();
-        return $result->as_array();
+        $result = SystemFormFields::select('f.*', 'ofs.sort as section_sort',  'ofc.sort as container_sort')
+                ->from('form_fields as f')
+                ->leftJoin('form_sections as ofc', 'ofc.id', 'f.container_id')
+                ->leftJoin('form_sections as ofs', 'ofs.id', 'ofc.parent_id')
+                ->where('f.object_id', $object_id)
+                ->orderBy('ofs.sort')
+                ->orderBy('ofc.sort')
+                ->orderBy('f.sort')
+                ->get();
+        return $result->toArray();
     }
 
     static function findByObject($object_id){
 
-        $result = \DB::select('f.*', array('ofs.sort', 'section_sort'), array('ofc.sort', 'container_sort'))
-            ->from(array('form_fields','f'))
-            ->join(array('form_sections', 'ofc'), 'LEFT')->on('ofc.id','=','f.container_id')
-            ->join(array('form_sections', 'ofs'), 'LEFT')->on('ofs.id','=','ofc.parent_id')
+        $result = SystemFormFields::select('f.*', 'ofs.sort as section_sort', 'ofc.sort as container_sort')
+            ->from('form_fields as f')
+            ->leftJoin('form_sections as ofc', 'ofc.id', 'f.container_id')
+            ->leftJoin('form_sections as ofs', 'ofs.id', 'ofc.parent_id')
             //->where('f.object_id', '=', $object_id)
-            ->order_by('f.name','ASC')
-            ->execute();
-
-        return $result->as_array();
+            ->orderBy('f.name','Asc')
+            ->get()
+            ->toArray();
+        return $result;
     }
 
     static function findBySection($section_id){
-       $result =  \DB::select('f.*', array('ofs.sort', 'section_sort'), array('ofc.sort', 'container_sort'))
-            ->from(array('form_fields','f'))
-            ->join(array('form_sections', 'ofc'), 'LEFT')->on('ofc.id','=','f.container_id')
-            ->join(array('form_sections', 'ofs'), 'LEFT')->on('ofs.id','=','ofc.parent_id')
-            ->where('ofs', '=', $section_id)
-            ->group_by('f.id')
-            ->execute();
+       $result =  SystemFormFields::select('f.*', 'ofs.sort as section_sort',  'ofc.sort as container_sort')
+            ->from('form_fields as f')
+            ->leftJoin('form_sections as ofc', 'ofc.id', 'f.container_id')
+            ->leftJoin('form_sections as ofs', 'ofs.id', 'ofc.parent_id')
+            ->where('ofs', $section_id)
+            ->groupBy('f.id')
+            ->get()
+            ->toArray();
+        return $result;
     }
 
 
@@ -62,24 +65,24 @@ class SystemFormFields extends Model
 
     static function findAllByObject($object_id){
 
-        $result = \DB::select('f.*')
-            ->from(array('form_fields','f'))
-            ->where('f.object_id', '=', $object_id)
-            ->order_by('f.name')
-            ->execute();
+        $result = SystemFormFields::select('f.*')
+            ->from('form_fields as f')
+            ->where('f.object_id', $object_id)
+            ->orderBy('f.name')
+            ->get();
 
-        return $result->as_array();
+        return $result->toArray();
     }
-
+    // ???
     static function findAllByIDs($field_ids){
-
-        $result = \DB::select()
-            ->from(array('form_fields','f'))
-            ->where('f.id', 'IN', $field_ids)
-            ->order_by(DB::expr('FIELD(id, '.implode(',',$field_ids).')'))
-            ->execute();
-
-        return $result->as_array();
+        dd(implode(',', $field_ids));
+        $result = SystemFormFields::from('form_fields as f')
+            ->whereIn('f.id', $field_ids)
+            ->orderBy('FIELD(id, '.implode(',',$field_ids).')')
+            ->get()
+            ->toArray();
+        dd($result);
+        return $result;
     }
     
     static function findAllGrouped($object_id){
@@ -92,31 +95,31 @@ class SystemFormFields extends Model
     }
     
     static function findBySectionIDs($section_ids){
-        $fields = \DB::select()->from('form_fields')->where('section_id', 'in', $section_ids)->order_by('section_id')->order_by('container_id')->order_by('sort')->execute();
+        $fields = SystemFormFields::whereIn('section_id', $section_ids)
+            ->orderBy('section_id')->orderBy('container_id')->orderBy('sort')->get();
         
         $grouped = array();
-        foreach($fields->as_array() as $f){
+        foreach($fields->toArray() as $f){
             $grouped[$f['section_id']][$f['container_id']][$f['id']] = $f;
         }
         return $grouped;
     }
     
     static function findAllTypes(){
-        $result = \DB::select()->from('form_field_types')->execute();
-        return $result->as_array();
+        $result = SystemFormFieldtypes::all();
+        return $result->toArray();
     }
 
     static function findByCleanName($clean_name){
-        $result = \DB::select()
-            ->from('form_fields')
-            ->join('form_field_types', 'left')->on('form_fields.field_type_id','=','form_field_types.id')
-            ->where('clean_name','=',$clean_name)
-            ->execute();
-        return current($result->as_array());
+        $result = SystemFormFieldtypes::
+            leftJoin('form_field_types as left', 'form_fields.field_type_id', 'form_field_types.id')
+            ->where('clean_name', $clean_name)
+            ->get();
+        return current($result->toArray());
     }
     
     static function findAllGroups(){
-        $result = \DB::select()->from('form_sections')->execute();
+        $result = SystemFormSection::all();
         
         $groups = array();
         foreach($result->as_array() as $row){
@@ -126,22 +129,22 @@ class SystemFormFields extends Model
     }
     
     static function findGroupsByIDs($ids){
-        $result = \DB::select()->from('form_sections')->where('id', 'in', $ids)->execute();
+        $result = SystemFormSection::whereIn('id', $ids)->get();
         
         $groups = array();
-        foreach($result->as_array() as $row){
+        foreach($result->toArray() as $row){
             $groups[$row['id']] = $row;
         }
         return $groups;
     }
     
     static function findByType($object_id, $type_id){
-        $result = \DB::select()->from('form_fields')->where('object_id', '=', $object_id)->where('field_type_id','=',$type_id)->execute();
-        return $result->as_array();
+        $result = SystemFormField::where('object_id', $object_id)->where('field_type_id', $type_id)->get();
+        return $result->toArray();
     }
 
     static function findAdditional(){
-        $result = Form_field::select('form_fields.*','form_field_types.f_field')
+        $result = SystemFormField::select('form_fields.*','form_field_types.f_field')
             ->leftJoin('form_field_types', 'form_fields.field_type_id','form_field_types.id')
             ->where('form_fields.system', '!=', 1)
             ->get()
@@ -150,17 +153,16 @@ class SystemFormFields extends Model
     }
 
     static function getCustomObjectFields(){
-        $result = \DB::select('form_fields.*','form_field_types.f_field')
-            ->from('form_fields')
-            ->join('form_field_types', 'left')->on('form_fields.field_type_id','=','form_field_types.id')
+        $result = SystemFormField::select('form_fields.*','form_field_types.f_field')
+            ->leftJoin('form_field_types', 'form_fields.field_type_id', 'form_field_types.id')
             ->where('form_fields.system', '!=', 1)
-            ->execute();
-        return $result->as_array();
+            ->get();
+        return $result->toArray();
     }
     
     static function findFeeFields($object_id){
-        $result = \DB::select()->from('form_fields')->where('object_id', '=', $object_id)->where('fee','=',1)->execute();
-        return $result->as_array();
+        $result = SystemFormField::where('object_id', $object_id)->where('fee',1)->get();
+        return $result->toArray();
     }
     
     static function parseTemplate($template, $fields, $additional_fields = array(), $verify = false){
@@ -224,15 +226,14 @@ class SystemFormFields extends Model
     
     static function findAllOptions($object_id){
         
-        $result = \DB::select('ofo.*')->from(array('form_field_options','ofo'))
-                ->join(array('form_fields', 'of'))->on('of.id', '=', 'ofo.object_field_id')
-                ->where('of.object_id', '=', $object_id)
-                ->order_by('ofo.object_field_id')
-                ->order_by('ofo.sort')
-                ->execute();
-        
+        $result = SystemFormfieldoption::select('ofo.*')->from('form_field_options as ofo')
+                ->join('form_fields as of', 'of.id', 'ofo.object_field_id')
+                ->where('of.object_id', $object_id)
+                ->orderBy('ofo.object_field_id')
+                ->orderBy('ofo.sort')
+                ->get();
         $options = array();
-        foreach($result->as_array() as $row){
+        foreach($result->toArray() as $row){
             $options[$row['object_field_id']][$row['id']] = $row['value'];
         }
         
@@ -244,22 +245,24 @@ class SystemFormFields extends Model
         
         //$data['clean_name'] = preg_replace('/[^0-9a-z_]/i','', str_replace(' ','_', strtolower($data['name'])));
         
-        $result = \DB::insert('form_fields')->set($data)->execute();
+        $result = SystemFormFields::create($data);
         return current($result);
     }
     
     static function update_($id, $data){
-        $result = \DB::update('form_fields')->set($data)->where('id', '=', $id)->execute();
+        $result = SystemFormFields::find($id)->fill($data);
+        $result->update();
     }
     
     static function delete_($id){
-        $result = \DB::delete('form_fields')->where('id','=',$id)->execute();
+        $result = SystemFormFields::find($id)->delete();
     }
        
     static function resort($sorts){
         
         foreach($sorts as $id => $sort){
-            DB::update('form_fields')->set(array('sort' => $sort))->where('id','=', $id)->execute();
+            $result = SystemFormFields::find($id)->fill(['sort'=>$sort]);
+            $result->update();
         }
         
     }
@@ -331,57 +334,55 @@ class SystemFormFields extends Model
 
     static function findAllFieldDataByFieldIds($company_id=null,$field_ids = null){
 
-        $query = \DB::select(array('f.id','field_id'),array('f.name','field_name'),array('f.clean_name','field_clean_name'),array('f.field_type_id','field_type_id'),
-            array('f.field_type_id','field_type_id'), array('fsf.required', 'field_required'), array('fsf.sort','field_sort'), array('fsf.read_only', 'field_read_only'),
-            array('fsection.id', 'section_id'), array('fsection.sort', 'section_sort'), array('fsection.name', 'section_name'),
-            array('fcontainer.sort', 'container_sort'), array('fcontainer.id', 'container_id'), array('fcontainer.name', 'container_name'),
-            array('foptions.id','option_id'), array('foptions.sort','option_sort'),array('foptions.value','option_value'))
-         ->from(array('form_sections_fields', 'fsf'))
-         ->join(array('form_fields','f'))->on('f.id','=','fsf.field_id')
-         ->join(array('form_sections', 'fcontainer'))->on('fcontainer.id','=','fsf.container_id')
-         ->join(array('form_sections', 'fsection'))->on('fsection.id','=','fcontainer.parent_id')
-         ->join(array('form_field_options', 'foptions'),'LEFT')->on('foptions.object_field_id','=','f.id');
+        $query = SystemFormSectionFields::select('f.id as field_id', 'f.name as field_name', 'f.clean_name as field_clean_name', 'f.field_type_id as field_type_id',
+            'f.field_type_id as field_type_id', 'fsf.required as field_required', 'fsf.sort as field_sort', 'fsf.read_only as field_read_only',
+            'fsection.id as section_id', 'fsection.sort as section_sort', 'fsection.name as section_name',
+            'fcontainer.sort as container_sort', 'fcontainer.id as container_id', 'fcontainer.name as container_name',
+            'foptions.id as option_id', 'foptions.sort as option_sort', 'foptions.value as option_value')
+         ->from('form_sections_fields as fsf')
+         ->join('form_fields as f', 'f.id', 'fsf.field_id')
+         ->join('form_sections as fcontainer', 'fcontainer.id', 'fsf.container_id')
+         ->join('form_sections as fsection', 'fsection.id', 'fcontainer.parent_id')
+         ->leftJoin('form_field_options as foptions', 'foptions.object_field_id', 'f.id');
 
         if($field_ids){
-            $query->where('f.id','IN', $field_ids);
+            $query->whereIn('f.id', $field_ids);
         }
 
         if($company_id){
-            $query->where('fsection.company_id','=', $company_id);
+            $query->where('fsection.company_id', $company_id);
         }
 
-        $query->order_by('fsection.sort', 'asc');
-        $query->order_by('fcontainer.sort', 'asc');
-        $query->order_by('fsf.sort', 'asc');
-        $query->order_by('foptions.sort', 'asc');
+        $query->orderBy('fsection.sort', 'Asc');
+        $query->orderBy('fcontainer.sort', 'Asc');
+        $query->orderBy('fsf.sort', 'Asc');
+        $query->orderBy('foptions.sort', 'Asc');
 
-        $result = $query->execute()->as_array();
-
+        $result = $query->get()->toArray();
         return $result;
     }
 
     static function findByFormId($form_section_id){
 
-        $query = \DB::select(array('f.id','field_id'),array('f.name','field_name'),array('f.clean_name','field_clean_name'),array('f.field_type_id','field_type_id'),
-            array('f.field_type_id','field_type_id'), array('fsf.required', 'field_required'), array('fsf.sort','field_sort'), array('fsf.read_only', 'field_read_only'),
-            array('fsection.id', 'section_id'), array('fsection.sort', 'section_sort'), array('fsection.name', 'section_name'),
-            array('fcontainer.sort', 'container_sort'), array('fcontainer.id', 'container_id'), array('fcontainer.name', 'container_name'),
-            array('foptions.id','option_id'), array('foptions.sort','option_sort'),array('foptions.value','option_value'))
-            ->from(array('form_sections_fields', 'fsf'))
-            ->join(array('form_fields','f'))->on('f.id','=','fsf.field_id')
-            ->join(array('form_sections', 'fcontainer'))->on('fcontainer.id','=','fsf.container_id')
-            ->join(array('form_sections', 'fsection'))->on('fsection.id','=','fcontainer.parent_id')
-            ->join(array('form_field_options', 'foptions'),'LEFT')->on('foptions.object_field_id','=','f.id');
+        $query = SystemFormSectionFields::select('f.id as field_id', 'f.name as field_name', 'f.clean_name as field_clean_name', 'f.field_type_id as field_type_id',
+            'f.field_type_id as field_type_id', 'fsf.required as field_required', 'fsf.sort as field_sort', 'fsf.read_only as field_read_only',
+            'fsection.id as section_id', 'fsection.sort as section_sort','fsection.name as section_name',
+            'fcontainer.sort as container_sort', 'fcontainer.id as container_id', 'fcontainer.name as container_name',
+            'foptions.id as option_id', 'foptions.sort as option_sort', 'foptions.value as option_value')
+            ->from('form_sections_fields as fsf')
+            ->join('form_fields as f', 'f.id', 'fsf.field_id')
+            ->join('form_sections as fcontainer', 'fcontainer.id', 'fsf.container_id')
+            ->join('form_sections as fsection', 'fsection.id', 'fcontainer.parent_id')
+            ->leftJoin('form_field_options as foptions', 'foptions.object_field_id', 'f.id');
 
-        $query->where('fsection.id','=', $form_section_id);
+        $query->where('fsection.id', $form_section_id);
 
-        $query->order_by('fsection.sort', 'asc');
-        $query->order_by('fcontainer.sort', 'asc');
-        $query->order_by('fsf.sort', 'asc');
-        $query->order_by('foptions.sort', 'asc');
+        $query->orderBy('fsection.sort', 'Asc');
+        $query->orderBy('fcontainer.sort', 'Asc');
+        $query->orderBy('fsf.sort', 'Asc');
+        $query->orderBy('foptions.sort', 'Asc');
 
-        $result = $query->execute()->as_array();
-
+        $result = $query->get()->toArray();
         return $result;
     }
 
@@ -389,15 +390,13 @@ class SystemFormFields extends Model
 
 
     static function validate($factory){
-        
-        $val = \Validation::forge($factory);
-
-        $val->add('name', 'Name')
-            ->add_rule('required');
-
-        $val->add('field_type_id', 'Field Type')
-            ->add_rule('required');
-
+        $val = Validator::make($factory,[
+            'name'=>'required',
+            'field_type_id'=>'required',
+        ],[
+            'name.required'=>'Name',
+            'field_type_id.required'=>'Field Type',
+        ]);
         return $val;
     }
 }
