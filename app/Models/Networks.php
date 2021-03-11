@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\system\SystemCompany;
 class Networks extends Model
 {
     use HasFactory;
@@ -113,7 +113,7 @@ class Networks extends Model
                 ->where('n.company_id', $company_id)->groupBy('nc.company_id');
         }else{
             // System Access
-            $query = Company::select('id as company_id');
+            $query = SystemCompany::select('id as company_id');
         }
 
         $result = $query->get()->toArray();

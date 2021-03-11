@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Modules\Accounting\Entities\Payment\AccountingPaymentSchedule;
+use Modules\Accounting\Entities\AccountingInvoice;
 use DateTime;
 class Payment extends Model
 {
@@ -229,27 +231,23 @@ class Payment extends Model
         $minimum_payment_amount = 25;
 
         $payments_made = self::getTotalPayments($data['case_id']);
-        $payments_scheduled = \Accounting\Model_Payment_Schedules::getAllSchedulesSum($data['case_id'], true);
-        $total_payments_due = Model_Invoice::getTotalByCaseID($data['case_id']) - ($payments_made + $payments_scheduled); // revisit
+        $payments_scheduled = AccountingPaymentSchedule::getAllSchedulesSum($data['case_id'], true);
+        $total_payments_due = AccountingInvoice::getTotalByCaseID($data['case_id']) - ($payments_made + $payments_scheduled); // revisit
         /*if($total_payments_due == 0){
             \Notification\Notify::error('Payments are already scheduled for the entire balance due');
         }*/
-
         if($data['generate_by'] == 'number'){
             $payments_amount = $total_payments_due / $data['number_payments'];
         }else{
             $payments_amount = $data['payment_amount'];
             $data['number_payments'] = ceil($total_payments_due / $payments_amount);
         }
-
         $payments = array();
-
         $last_payment = false;
         $sch_payments = array();
-        $last_pending_payment_date = \Accounting\Model_Payment_Schedules::getLastPendingDate($data['case_id']);
+        $last_pending_payment_date = AccountingPaymentSchedule::getLastPendingDate($data['case_id']);
         $start_date = (empty($last_pending_payment_date)?$data['start_date']:$last_pending_payment_date);
         $date_due = date('Y-m-d', strtotime($start_date));
-
         for($i=1;$i<=$data['number_payments'];$i++){
 
             if($i>1 || !empty($last_pending_payment_date)){
@@ -274,15 +272,12 @@ class Payment extends Model
                 'updated_by' => $_SESSION['user']['id']
             );
 
-            DB::insert('payment_schedules')->set($payment)->execute();
-
+            AccountingPaymentSchedule::create($payment);
             if($last_payment){
                 return;
             }
-
             $sch_payments[] = $payments_amount;
         }
-
     }
 
     public function getPaymentPlanSummary($case_id){

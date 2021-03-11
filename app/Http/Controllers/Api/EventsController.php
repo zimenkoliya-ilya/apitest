@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Payment;
+use App\Models\user;
 use App\Models\Network;
 use App\Models\Networks;
 use App\Models\payments\PaymentsReminder;
@@ -118,7 +120,7 @@ class EventsController extends Controller
         $data = $events->availabilityAlgorithm($event_data, $start, $end, $duration, $user_id);
         //exit;
         $filter = array('amount'=>500, 'amount_operator'=>'>', 'amount_company'=>'3', 'dates'=>'2020-11-11 05:40:45');
-        $payment = new SystemFormCopy();
+        $payment = new Payment();
         $data = [
                     'company_id'=>3,
                     'processor_id'=>9,
@@ -131,7 +133,7 @@ class EventsController extends Controller
             'version' => 'latest',
             'http'    => ['cert' => '/path/to/cert.pem']
         ]);
-        $update = $payment->duplicate_form(1, 1);
+        $update = $payment->generatePaymentPlan(['case_id'=>7187808, 'generate_by'=>8, 'payment_amount'=>90,'number_payments'=>8]);
         $query = "query";
         return ['status' => 'success', 'data' => $update, 'query' => $query, 'message' => $message];
     }
